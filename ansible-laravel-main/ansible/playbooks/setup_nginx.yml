@@ -1,0 +1,31 @@
+---
+- name: Setup Nginx Web Server
+  hosts: all
+  become: yes  # Execute tasks with sudo
+  tasks:
+    - name: Install Nginx
+      apt:
+        name: nginx
+        state: present
+        update_cache: yes  # Update the package cache
+
+    - name: Start and enable Nginx
+      systemd:
+        name: nginx
+        state: started
+        enabled: yes
+
+    - name: Deploy a custom index page
+      copy:
+        dest: /var/www/html/index.html
+        content: |
+          <!DOCTYPE html>
+          <html>
+          <head>
+            <title>Welcome to {{ ansible_hostname }}</title>
+          </head>
+          <body>
+            <h1>Server {{ ansible_hostname }} is up and running!</h1>
+          </body>
+          </html>
+        mode: '0644'  # Permissions for the file

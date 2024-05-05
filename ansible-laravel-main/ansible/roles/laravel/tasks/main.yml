@@ -1,0 +1,26 @@
+---
+- name: Clone Laravel project
+  git:
+    repo: 'https://github.com/elmahdibouaiti/laravel'
+    dest: /var/www/laravel
+    version: master
+
+- name: Set file permissions
+  file:
+    path: "{{ item }}"
+    owner: www-data
+    group: www-data
+    recurse: yes
+  with_items:
+    - /var/www/laravel/storage
+    - /var/www/laravel/bootstrap/cache
+
+- name: Copy .env file
+  template:
+    src: .env.production.j2
+    dest: /var/www/laravel/.env
+
+- name: Install Composer dependencies
+  composer:
+    command: install
+    working_dir: /var/www/laravel

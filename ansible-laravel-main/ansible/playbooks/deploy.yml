@@ -1,0 +1,81 @@
+---
+- name: Deploy Laravel Application
+  hosts: all
+  become: yes
+  vars:
+    project_path: /var/www/app
+    repo_url: 'https://github.com/elmahdibouaiti/laravel'
+    branch_name: main
+
+  tasks:
+    - name: Install Git
+      apt:
+        name: git
+        state: present
+        update_cache: yes
+
+    - name: Install Composer
+      apt:
+        name: composer
+        state: present
+        update_cache: yes
+
+    - name: Pull latest code from Git
+      git:
+        repo: "{{ repo_url }}"
+        dest: "{{ project_path }}"
+        version: "{{ branch_name }}"
+      notify:
+        - restart nginx
+        - restart php-fpm
+
+    - name: Ensure application directory exists
+      file:
+        path: "{{ project_path }}"
+        state: directory
+        owner: www-data
+        group: www-data
+        mode: '0755'
+
+    - name: Ensure vendor directory is writable
+      file:
+        path: "{{ project_path }}/vendor"
+        state: directory
+        owner: www-data
+        group: www-data
+        mode: '0755'
+
+    - name: Install Composer dependencies
+      become: yes
+      become_user: www-data
+      composer:
+        command: install
+        working_dir: "{{ project_path }}"
+        no_dev: true
+        optimize_autoloader: true
+
+    - name: Run database migrations
+      command: php artisan migrate --force
+      args:
+        chdir: "{{ project_path }}"
+      environment:
+        DB_HOST: "{{ db_host }}"
+        DB_DATABASE: "{{ db_database }}"
+        DB_USERNAME: "{{ db_username }}"
+        DB_PASSWORD: "{{ db_password }}"
+
+    - name: Optimize Laravel Application
+      command: php artisan optimize
+      args:
+        chdir: "{{ project_path }}"
+
+  handlers:
+    - name: restart nginx
+      systemd:
+        name: nginx
+        state: restarted
+
+    - name: restart php-fpm
+      systemd:
+        name: php7.4-fpm  
+        state: restarted

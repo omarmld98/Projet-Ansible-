@@ -1,0 +1,19 @@
+all:
+  hosts:
+    vm-cloud-stag-02:
+      ansible_host: 57.128.166.228
+      ansible_user: debian
+  children:
+    webservers:
+      hosts:
+        vm-cloud-stag-02: ~
+    dbservers:
+      hosts:
+        vm-cloud-prod-01: ~
+        vm-cloud-stag-02: ~
+    staging:
+      hosts:
+        vm-cloud-stag-02: ~
+    production:
+      hosts:
+        vm-cloud-prod-01: ~        

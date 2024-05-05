@@ -1,0 +1,21 @@
+---
+- name: Install PHP and extensions
+  apt:
+    name: "{{ item }}"
+    state: present
+    update_cache: yes
+  loop:
+    - php
+    - php-fpm
+    - php-mysql
+    - php-mbstring
+    - php-xml
+    - php-bcmath
+    - php-json
+    - php-redis
+
+- name: Ensure PHP-FPM is running
+  systemd:
+    name: php7.4-fpm
+    state: started
+    enabled: yes

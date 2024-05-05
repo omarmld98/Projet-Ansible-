@@ -1,0 +1,44 @@
+---
+- name: Install MySQL
+  apt:
+    name: mysql-server
+    state: present
+    update_cache: yes
+
+- name: Start MySQL service
+  systemd:
+    name: mysql
+    state: started
+    enabled: yes
+
+- name: Set root password for MySQL
+  community.mysql.mysql_user:
+    login_user: root
+    login_password: ''
+    user: root
+    password: 'new-strong-password'
+    host_all: yes
+    state: present
+
+- name: Remove anonymous users from MySQL
+  community.mysql.mysql_user:
+    login_user: root
+    login_password: 'new-strong-password'
+    user: ''
+    state: absent
+    host_all: yes
+
+- name: Ensure test database does not exist
+  community.mysql.mysql_db:
+    login_user: root
+    login_password: 'new-strong-password'
+    name: test
+    state: absent
+
+- name: Disallow root login remotely
+  community.mysql.mysql_user:
+    login_user: root
+    login_password: 'new-strong-password'
+    user: root
+    host: '%'
+    state: absent
